@@ -1,0 +1,33 @@
+---
+name: build
+on: [push]
+jobs:
+  molecule:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [centos7]
+        python-version: [3.7, 3.8]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible "molecule[docker,lint]"
+      - name: Test with molecule
+        env:
+          MOLECULE_DISTRO: ${{ matrix.os }}
+        run: |
+          cd ..
+          ln -sf ansible-role-mysql-router daixijun.mysqlrouter
+          cd daixijun.mysqlrouter
+          molecule test
+      - name: Publish role to Galaxy
+        if: success()
+        run: ansible-galaxy role import --api-key ${{ secrets.ANSIBLE_GALAXY_API_KEY }} $(echo $GITHUB_REPOSITORY | cut -d/ -f1) $(echo $GITHUB_REPOSITORY | cut -d/ -f2)

@@ -1,0 +1,7 @@
+---
+mysqlrouter_version: 8.0.20
+mysqlrouter_download_url: https://dev.mysql.com/get/Downloads/MySQL-Router/mysql-router-{{ mysqlrouter_version }}-el7-x86_64.tar.gz
+mysqlrouter_bootstrap_server_url: "" # user:password@host:port
+mysqlrouter_connect_timeout: 10
+mysqlrouter_read_timeout: 10
+mysqlrouter_bind_address: 127.0.0.1

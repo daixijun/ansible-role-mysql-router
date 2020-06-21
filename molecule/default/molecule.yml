@@ -1,0 +1,64 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint -v
+platforms:
+  - name: mysql-primary
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+    groups:
+      - mysql
+    children:
+      - mysql_primary
+  - name: mysql-secondary1
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+    groups:
+      - mysql
+    children:
+      - mysql_secondary
+  - name: mysql-secondary2
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+    groups:
+      - mysql
+    children:
+      - mysql_secondary
+  - name: mysql-shell
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+  - name: mysql-router
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      verbosity: 1
+verifier:
+  name: ansible

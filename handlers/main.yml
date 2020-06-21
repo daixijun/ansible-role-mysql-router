@@ -1,0 +1,7 @@
+---
+- name: restart mysqlrouter
+  systemd:
+    name: mysqlrouter.service
+    daemon_reload: True
+    enabled: True
+    state: restarted

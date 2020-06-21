@@ -1,0 +1,74 @@
+---
+- name: Ensure mysql group
+  group:
+    name: mysqlrouter
+    state: present
+
+- name: Ensure mysql user
+  user:
+    name: mysqlrouter
+    group: mysqlrouter
+    create_home: False
+    shell: /sbin/nologin
+    system: True
+    state: present
+
+- name: Download mysql-router package
+  get_url:
+    url: "{{ mysqlrouter_download_url}}"
+    dest: "{{ playbook_dir }}/files/{{ mysqlrouter_download_url | basename }}"
+    # checksum: "md5:{{ mysqlrouter_download_url }}.md5"
+    timeout: 300
+  run_once: True
+  delegate_to: localhost
+  register: _mysqlrouter_download
+
+- name: Unarchive package
+  unarchive:
+    src: "files/{{ mysqlrouter_download_url | basename }}"
+    dest: /usr/local/
+    remote_src: False
+    owner: mysqlrouter
+    group: mysqlrouter
+    creates: /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64
+
+- name: Symlink /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64 to /usr/local/mysqlrouter
+  file:
+    src: /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64
+    dest: /usr/local/mysqlrouter
+    state: link
+    owner: mysqlrouter
+    group: mysqlrouter
+    force: True
+
+- name: Set PATH
+  copy:
+    content: "export PATH=/usr/local/mysqlrouter:$PATH"
+    dest: /etc/profile.d/mysqlrouter.sh
+    mode: "644"
+    owner: root
+    group: root
+
+- name: mysql router bootstrap
+  shell: |-
+    /usr/local/mysqlrouter/bin/mysqlrouter \
+      --bootstrap {{ mysqlrouter_bootstrap_server_url }} \
+      --conf-bind-address {{ mysqlrouter_bind_address }} \
+      --connect-timeout {{ mysqlrouter_connect_timeout }} \
+      --read-timeout {{ mysqlrouter_read_timeout }} \
+      --conf-use-gr-notifications \
+      --directory /usr/local/mysqlrouter \
+      --user mysqlrouter \
+      --force
+  args:
+    creates: /usr/local/mysqlrouter/mysqlrouter.conf
+    warn: False
+  notify:
+    - restart mysqlrouter
+
+- name: Generate systemd configuration
+  template:
+    src: mysqlrouter.service.j2
+    dest: /usr/lib/systemd/system/mysqlrouter.service
+  notify:
+    - restart mysqlrouter
