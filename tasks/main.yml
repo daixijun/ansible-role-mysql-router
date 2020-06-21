@@ -15,7 +15,7 @@
 
 - name: Download mysql-router package
   get_url:
-    url: "{{ mysqlrouter_download_url}}"
+    url: "{{ mysqlrouter_download_url }}"
     dest: "{{ playbook_dir }}/files/{{ mysqlrouter_download_url | basename }}"
     # checksum: "md5:{{ mysqlrouter_download_url }}.md5"
     timeout: 300
@@ -63,6 +63,8 @@
   args:
     creates: /usr/local/mysqlrouter/mysqlrouter.conf
     warn: False
+  tags:
+    - skip_ansible_lint
   notify:
     - restart mysqlrouter
 
