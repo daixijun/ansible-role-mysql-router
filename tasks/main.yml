@@ -19,7 +19,8 @@
     dest: "{{ playbook_dir }}/files/{{ mysqlrouter_download_url | basename }}"
     # checksum: "md5:{{ mysqlrouter_download_url }}.md5"
     timeout: 300
-  run_once: True
+  run_once: true
+  become: false
   delegate_to: localhost
   register: _mysqlrouter_download
 
@@ -27,10 +28,15 @@
   unarchive:
     src: "files/{{ mysqlrouter_download_url | basename }}"
     dest: /usr/local/
-    remote_src: False
+    remote_src: false
+    creates: /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64
+
+- name: Ensure directory permission
+  file:
+    path: /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64
+    recurse: true
     owner: mysqlrouter
     group: mysqlrouter
-    creates: /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64
 
 - name: Symlink /usr/local/mysql-router-{{ mysqlrouter_version }}-el7-x86_64 to /usr/local/mysqlrouter
   file:
@@ -39,7 +45,7 @@
     state: link
     owner: mysqlrouter
     group: mysqlrouter
-    force: True
+    force: true
 
 - name: Set PATH
   copy:
@@ -62,7 +68,7 @@
       --force
   args:
     creates: /usr/local/mysqlrouter/mysqlrouter.conf
-    warn: False
+    warn: false
   tags:
     - skip_ansible_lint
   notify:
