@@ -1,6 +1,7 @@
 ---
 - name: Converge
   hosts: all
+  any_errors_fatal: true
   tasks:
     - name: "Include daixijun.mysql"
       include_role:
@@ -8,23 +9,10 @@
       vars:
         mysql_root_password: Uiteewieh=ohJ1yuhu4k
         mysql_repl_password: goh?she5ahpheiYi5ahY
+        mysql_innodb_cluster_password: hai0AiV7chaig5pheo=Z
         mysql_group_replication_name: 231e852b-fa3f-4c82-b2eb-4b85eb3d03bd
-        mysql_users:
-          - name: ic
-            password: hai0AiV7chaig5pheo=Z
-            priv: "*.*:ALL,GRANT"
-            host: "%"
       when:
         - inventory_hostname in groups['mysql']
-    - name: "Include daixijun.mysqlshell"
-      include_role:
-        name: "daixijun.mysqlshell"
-      vars:
-        mysqlshell_mysqlx_server: "{{ hostvars['mysql-primary']['ansible_default_ipv4']['address'] }}:33060"
-        mysqlshell_admin_username: ic
-        mysqlshell_admin_password: hai0AiV7chaig5pheo=Z
-      when:
-        - inventory_hostname == 'mysql-shell'
     - name: "Include daixijun.mysqlrouter"
       include_role:
         name: "daixijun.mysqlrouter"
